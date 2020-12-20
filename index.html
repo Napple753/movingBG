@@ -1,0 +1,88 @@
+<html>
+  <head>
+    <title>movingBG</title>
+    <style>
+      html,body,div{
+        margin:0;
+        padding:0;
+        border:0;
+        width:100%;
+        height:100%;
+      }
+
+
+      #setting{
+        position:absolute;
+        top:0;
+        left:0;
+        background-color:rgba(256,256,256,0.95);
+        margin:1em;
+        padding:1em 2em;
+        border-radius:1em;
+      }
+      form>label,form>input{
+        display:block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="movingBox"></div>
+    <form id="setting" method="get">
+      <label>pitch:<input type="number" name="pitch" step="1">px</label>
+      <label>period:<input type="number" name="period" step="0.1">s</label>
+      <label>color1:<input type="color" name="c1"></label>
+      <label>color2:<input type="color" name="c2"></label>
+      <input type="submit" value="change setting">
+    </form>
+  </body>
+
+  <script>
+    "use strict";
+    const query = location.href.split("?")[1];
+    if(query){
+      const $_GET = {};
+      query.split("&").forEach((qv) => {
+        const [q,v] = qv.split("=");
+        $_GET[q]=v.replace("%23","#");
+      });
+      setParameters($_GET);
+    }else{
+      setParameters({
+        pitch:40,
+        period:1.0,
+        c1:"#000000",
+        c2:"#ffffff"
+      })
+    }
+    function setParameters({
+      pitch:pitch,//[px]
+      period:period,//[s]
+      c1:c1,
+      c2:c2
+    }){
+      pitch = Number(pitch);
+      period = Number(period);
+      if(pitch==0) pitch=40;
+      if(period==0) period=1;
+      const styleTag = document.createElement('style');
+      styleTag.innerHTML = `
+        #movingBox{
+          background-image: linear-gradient(90deg,
+            ${c1} 0%, ${c1} 50%, ${c2} 50%, ${c2}
+          );
+          background-size: ${pitch}px;
+          animation: ${period}s linear infinite running slideBG;
+        }
+        @keyframes slideBG {
+          from {background-position-x:0;}
+          to   {background-position-x:${pitch}px;}
+        }
+      `
+      document.getElementsByTagName("head")[0].appendChild(styleTag);
+      document.getElementsByName("pitch")[0].value=pitch;
+      document.getElementsByName("period")[0].value=period;
+      document.getElementsByName("c1")[0].value=c1;
+      document.getElementsByName("c2")[0].value=c2;
+    }
+  </script>
+</html>
