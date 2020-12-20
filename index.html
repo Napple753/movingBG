@@ -9,8 +9,6 @@
         width:100%;
         height:100%;
       }
-
-
       #setting{
         position:absolute;
         top:0;
@@ -22,14 +20,15 @@
       }
       form>label,form>input{
         display:block;
+        margin:0.5em 1em;
       }
     </style>
   </head>
   <body>
     <div id="movingBox"></div>
     <form id="setting" method="get">
-      <label>pitch:<input type="number" name="pitch" step="1">px</label>
-      <label>period:<input type="number" name="period" step="0.1">s</label>
+      <label>pitch:<input type="number" name="pitch" step="1" style="width:5em;">px</label><span id="windowSize"></span>
+      <label>period:<input type="number" name="period" step="0.1" style="width:5em;">s</label>
       <label>color1:<input type="color" name="c1"></label>
       <label>color2:<input type="color" name="c2"></label>
       <input type="submit" value="change setting">
@@ -84,5 +83,28 @@
       document.getElementsByName("c1")[0].value=c1;
       document.getElementsByName("c2")[0].value=c2;
     }
+
+    let settingVisible=true;
+    document.body.addEventListener("click",function(){
+      const doc = window.document;
+      const docEl = doc.documentElement;
+      let requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+      requestFullScreen.call(docEl);
+
+      if(settingVisible){
+        document.getElementById("setting").style.opacity="0";
+        settingVisible=false;
+      }else{
+        document.getElementById("setting").style.opacity="1";
+        settingVisible=true;
+      }
+    });
+    /*
+    function rewriteWindowSize(){
+      document.getElementById("windowSize").innerHTML = "(page size" + document.body.offsetWidth + "×" + document.body.offsetHeight + "px)"
+    }
+    window.onresize = rewriteWindowSize;
+    rewriteWindowSize();
+    */
   </script>
 </html>
