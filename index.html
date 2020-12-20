@@ -85,7 +85,7 @@
     }
 
     let settingVisible=true;
-    document.body.addEventListener("click",function(){
+    document.getElementById("movingBox").addEventListener("click",function(){
       const doc = window.document;
       const docEl = doc.documentElement;
       let requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
