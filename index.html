@@ -13,30 +13,66 @@
         position:absolute;
         top:0;
         left:0;
-        background-color:rgba(256,256,256,0.95);
+        background-color:rgba(240,240,240,0.95);
         margin:1em;
         padding:1em 2em;
         border-radius:1em;
       }
-      form>label,form>input{
+      #setting.closed{
+        padding:0;
+        width:2em;
+        height:2em;
+      }
+      #setting.closed *{
+        display:none;
+      }
+      #setting.closed .btn{
         display:block;
-        margin:0.5em 1em;
+      }
+      dt,dd{
+        height:2em;
+      }
+      dt{
+        width:5em;
+        text-align:right;
+        float:left;
+        clear:both;
+      }
+      dd{
+        margin-left:1em;
+        width:10em;
+        float:left;
+      }
+      #setting .btn{
+        position:absolute;
+        top:0;
+        left:0;
+        margin:.5em;
+        width:1em;
+        height:1em;
       }
     </style>
   </head>
   <body>
     <div id="movingBox"></div>
     <form id="setting" method="get">
-      <label>pitch:<input type="number" name="pitch" step="1" style="width:5em;">px</label><span id="windowSize"></span>
-      <label>period:<input type="number" name="period" step="0.1" style="width:5em;">s</label>
-      <label>color1:<input type="color" name="c1"></label>
-      <label>color2:<input type="color" name="c2"></label>
+      <img class="btn" src="iconfinder_cancel_close_delete_remove_reject_3994424.png">
+      <dl>
+        <dt>pitch:</dt><dd><input type="number" name="pitch" step="1" style="width:5em;">px</dd>
+        <dt>period:</dt><dd><input type="number" name="period" step="1" style="width:5em;">s</dd>
+        <dt>angle:</dt><dd><input type="number" name="angle" step="90" max="270" min="0" style="width:5em;">°</dd>
+        <dt>color1:</dt><dd><input type="color" name="c1"></dd>
+        <dt>color2:</dt><dd><input type="color" name="c2"></dd>
+      </dl>
       <input type="submit" value="change setting">
     </form>
+    <!-- button images from https://www.iconfinder.com/iconsets/essentials-pack -->
   </body>
 
   <script>
     "use strict";
+
+    //urlから設定を取得。CSSに反映
     const query = location.href.split("?")[1];
     if(query){
       const $_GET = {};
@@ -49,6 +85,7 @@
       setParameters({
         pitch:40,
         period:1.0,
+        angle:0,
         c1:"#000000",
         c2:"#ffffff"
       })
@@ -56,55 +93,67 @@
     function setParameters({
       pitch:pitch,//[px]
       period:period,//[s]
+      angle:angle,//[°]
       c1:c1,
       c2:c2
     }){
-      pitch = Number(pitch);
-      period = Number(period);
+      pitch = pitch ? Number(pitch) : 0;
       if(pitch==0) pitch=40;
-      if(period==0) period=1;
+
+      period = period ? Number(period) : 0;
+      if(period==0) period=10;
+
+      angle = angle ? Number(angle) : 0;
+      angle = (Math.round(angle/90)%4)*90
+      angle = (angle>=0) ? angle : angle+360;
+
+      const angleRadian = angle * Math.PI / 180;
+
+      const pitchX = pitch * Math.cos(angleRadian);
+      const pitchY = pitch * Math.sin(angleRadian);
+
       const styleTag = document.createElement('style');
       styleTag.innerHTML = `
         #movingBox{
-          background-image: linear-gradient(90deg,
+          background-image: linear-gradient(${angle+90}deg,
             ${c1} 0%, ${c1} 50%, ${c2} 50%, ${c2}
           );
-          background-size: ${pitch}px;
+          background-size: ${pitch}px ${pitch}px;
           animation: ${period}s linear infinite running slideBG;
         }
         @keyframes slideBG {
-          from {background-position-x:0;}
-          to   {background-position-x:${pitch}px;}
+          from {background-position:0 0;}
+          to   {background-position:${pitchX}px ${-pitchY};}
         }
       `
       document.getElementsByTagName("head")[0].appendChild(styleTag);
       document.getElementsByName("pitch")[0].value=pitch;
       document.getElementsByName("period")[0].value=period;
+      document.getElementsByName("angle")[0].value=angle;
       document.getElementsByName("c1")[0].value=c1;
       document.getElementsByName("c2")[0].value=c2;
     }
 
-    let settingVisible=true;
+    //設定の表示/非表示切り替え
+    let settingClosed=false;
+    document.querySelector("#setting .btn").addEventListener("click",function(){
+      if(settingClosed){
+        document.getElementById("setting").classList.remove("closed");
+        settingClosed=false;
+        document.querySelector("#setting .btn").src = "iconfinder_cancel_close_delete_remove_reject_3994424.png"
+      }else{
+        document.getElementById("setting").classList.add("closed");
+        settingClosed=true;
+        document.querySelector("#setting .btn").src = "iconfinder_settings_preferences_options_gear_cog_3994403.png"
+      }
+    });
+
+    //全画面表示
     document.getElementById("movingBox").addEventListener("click",function(){
       const doc = window.document;
       const docEl = doc.documentElement;
       let requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
       requestFullScreen.call(docEl);
-
-      if(settingVisible){
-        document.getElementById("setting").style.opacity="0";
-        settingVisible=false;
-      }else{
-        document.getElementById("setting").style.opacity="1";
-        settingVisible=true;
-      }
     });
-    /*
-    function rewriteWindowSize(){
-      document.getElementById("windowSize").innerHTML = "(page size" + document.body.offsetWidth + "×" + document.body.offsetHeight + "px)"
-    }
-    window.onresize = rewriteWindowSize;
-    rewriteWindowSize();
-    */
   </script>
 </html>
